@@ -1,0 +1,8 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "scripts": {
+        "install-backend": "cd backend && npm install",
+        "install-client": "cd client && npm install"
+    }
+}
