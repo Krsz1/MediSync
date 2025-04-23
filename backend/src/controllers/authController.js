@@ -7,15 +7,17 @@ export const registerUser = async (req, res) => {
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
 
-        updateProfile(userCredential.user, {
+        const user = userCredential.user;
+        const uid = user.uid;
+
+        updateProfile(user, {
             displayName: rest.username
         });
 
         await setDoc(doc(firestore, "users", uid), {
             uid: uid,
-            email,
+            email: email,
             ...rest,
         });
 
