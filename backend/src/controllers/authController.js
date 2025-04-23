@@ -1,66 +1,48 @@
-const bcrypt = require('bcryptjs');
-const { supabase } = require('../utils/supabaseClient'); // Importa el cliente de Supabase configurado previamente
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, firestore } from "../utils/firebaseConfig.js";
 
-// Función para registrar un nuevo usuario
-const registerUser = async (req, res) => {
-  const { fullName, email, password, identification, gender, userType } = req.body;
+export const registerUser = async (req, res) => {
+    const { email, password, ...rest } = req.body;
 
-  try {
-    // Verificar si el correo ya está registrado
-    const { data: existingUser } = await supabase
-      .from('User')
-      .select('*')
-      .eq('email', email)
-      .single();
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
 
-    if (existingUser) {
-      return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
+        updateProfile(userCredential.user, {
+            displayName: rest.username
+        });
+
+        await setDoc(doc(firestore, "users", uid), {
+            uid: uid,
+            email,
+            ...rest,
+        });
+
+        return res.status(201).json({ message: "Usuario creado exitosamente." });
+    } catch (err) {
+        return res.status(500).json({ message: "Error al crear el usuario.", error: err.message });
     }
-
-    // Verificar si el número de identificación ya está registrado
-    const { data: existingId } = await supabase
-      .from('User')
-      .select('*')
-      .eq('identification', identification)
-      .single();
-
-    if (existingId) {
-      return res.status(400).json({ message: 'El número de identificación ya está registrado' });
-    }
-
-    // Hashear la contraseña antes de guardarla
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Crear el usuario en Supabase (autenticación)
-    const { data: user, error } = await supabase.auth.signUp({
-      email,
-      password: hashedPassword,
-    });
-
-    if (error) {
-      return res.status(500).json({ message: 'Error al registrar el usuario en Supabase', error: error.message });
-    }
-
-    // Insertar los datos adicionales del usuario en la base de datos
-    const { data: userInsert, error: dbError } = await supabase
-      .from('User')
-      .insert([{
-        name: fullName,
-        identification,
-        email,
-        gender,
-        user_type: userType, // 'Patient', 'Medic', 'Admin'
-      }]);
-
-    if (dbError) {
-      return res.status(500).json({ message: 'Error al guardar los datos del usuario en la base de datos', error: dbError.message });
-    }
-
-    res.status(201).json({ message: 'Usuario registrado exitosamente' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al registrar el usuario', error: error.message });
-  }
 };
 
-module.exports = { registerUser };
+export const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+
+        return res.status(200).json({ message: "Usuario logueado exitosamente.", uid });
+    } catch (err) {
+        return res.status(500).json({ message: "Error al loguear el usuario.", error: err.message });
+    }
+}
+
+export const logoutUser = async (req, res) => {
+    try {
+        await signOut(auth);
+        return res.status(200).json({ message: "Usuario deslogueado exitosamente." });
+    } catch (err) {
+        return res.status(500).json({ message: "Error al desloguear el usuario.", error: err.message });
+    }
+}
