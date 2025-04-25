@@ -1,155 +1,221 @@
-import React, { useState } from "react";
+import React from "react";
 import "./Register.css";
 import logo from "../assets/logo_register.png";
-import axios from 'axios'; // Para hacer solicitudes HTTP
+import { useForm } from "react-hook-form";
+import { useAuth } from "../context/authContextInstance";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [formData, setFormData] = useState({
-    identification: "",
-    fullName: "",
-    gender: "",
-    birthday: "",
-    address: "",
-    phoneNumber: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    userType: "Patient"  // Default role set to 'Patient', can change if needed
-  });
-  
-  // Manejar cambios en los campos del formulario
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const { registerUser, error: registerError } = useAuth();
+  const navigate = useNavigate();
 
-  // Enviar el formulario al backend
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
 
-    // Validar que las contraseñas coinciden
-    if (formData.password !== formData.confirmPassword) {
-      return alert("Las contraseñas no coinciden.");
-    }
+  const password = watch("password");
+  const role = watch("role");
 
-    try {
-      // Enviar la solicitud de registro al backend
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
-        fullName: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-        identification: formData.identification,
-        gender: formData.gender,
-        userType: formData.userType,  // Pasar el tipo de usuario aquí
-      });
+  const onSubmit = async (data) => {
+    const {
+      fullName,
+      email,
+      username,
+      password,
+      role,
+      specialty,
+      dateOfBirth,
+    } = data;
 
-      // Manejo de la respuesta del backend
-      if (response.status === 201) {
-        alert('Usuario registrado exitosamente');
-        // Redirigir a la página de login o hacer algo más
-      }
-    } catch (error) {
-      console.error('Error al registrar el usuario:', error);
-      alert('Hubo un error al registrar el usuario. Intenta de nuevo.');
-    }
+    const userData = {
+      name: fullName,
+      email,
+      username,
+      password,
+      role: role.toLowerCase(),
+      ...(role === "Medic" && { specialty }),
+      ...(role === "Patient" && { dateOfBirth }),
+    };
+    registerUser(userData);
+    navigate("/login");
   };
 
   return (
     <div className="register-page-container">
-      <div className="register-logo-container">
-        <img src={logo} alt="MediSync Logo" className="register-logo" />
-      </div>
-      <h1 className="register-title">Register</h1>
+      <div className="register-container">
+        <Link to="/" className="logo-link">
+          <img src={logo} alt="Logo" className="logo" />
+        </Link>
+        <h1>Registro</h1>
+        {registerError && (
+          <span className="error-label" role="alert">
+            {registerError}
+          </span>
+        )}
+        <form onSubmit={handleSubmit(onSubmit)} className="register-form">
+          <div className="form-group form-group-full">
+            <label htmlFor="fullName">Nombre completo</label>
+            <input
+              type="text"
+              id="fullName"
+              placeholder="Nombre completo"
+              {...register("fullName", {
+                required: "Este campo es obligatorio",
+              })}
+              aria-invalid={errors.fullName ? "true" : "false"}
+            />
+            {errors.fullName && (
+              <span className="error" role="alert">
+                {errors.fullName.message}
+              </span>
+            )}
+          </div>
 
-      {/* Formulario de registro */}
-      <form onSubmit={handleSubmit} className="register-form">
-        <input
-          type="text"
-          name="identification"
-          placeholder="Número de Identificación"
-          value={formData.identification}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="fullName"
-          placeholder="Nombres y Apellidos"
-          value={formData.fullName}
-          onChange={handleChange}
-          required
-        />
-        <select
-          name="gender"
-          value={formData.gender}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Seleccionar Género</option>
-          <option value="Male">Masculino</option>
-          <option value="Female">Femenino</option>
-        </select>
-        <input
-          type="date"
-          name="birthday"
-          value={formData.birthday}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="address"
-          placeholder="Dirección"
-          value={formData.address}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="tel"
-          name="phoneNumber"
-          placeholder="Número de Celular"
-          value={formData.phoneNumber}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="email"
-          name="email"
-          placeholder="Correo Electrónico"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirmar Contraseña"
-          value={formData.confirmPassword}
-          onChange={handleChange}
-          required
-        />
-        <select
-          name="userType"
-          value={formData.userType}
-          onChange={handleChange}
-          required
-        >
-          <option value="Patient">Paciente</option>
-          <option value="Medic">Médico</option>
-          <option value="Admin">Administrador</option>
-        </select>
-        <button type="submit">Register</button>
-      </form>
+          <div className="form-group">
+            <label htmlFor="email">Correo electrónico</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="Correo electrónico"
+              {...register("email", { required: "Este campo es obligatorio" })}
+              aria-invalid={errors.email ? "true" : "false"}
+            />
+            {errors.email && (
+              <span className="error" role="alert">
+                {errors.email.message}
+              </span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="username">Nombre de usuario</label>
+            <input
+              type="text"
+              id="username"
+              placeholder="Nombre de usuario"
+              {...register("username", {
+                required: "Este campo es obligatorio",
+              })}
+              aria-invalid={errors.username ? "true" : "false"}
+            />
+            {errors.username && (
+              <span className="error" role="alert">
+                {errors.username.message}
+              </span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Contraseña</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Contraseña"
+              {...register("password", {
+                required: "Este campo es obligatorio",
+              })}
+              aria-invalid={errors.password ? "true" : "false"}
+            />
+            {errors.password && (
+              <span className="error" role="alert">
+                {errors.password.message}
+              </span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="confirmPassword">Confirmar contraseña</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="Confirmar contraseña"
+              {...register("confirmPassword", {
+                required: "Este campo es obligatorio",
+                validate: (value) =>
+                  value === password || "Las contraseñas no coinciden",
+              })}
+              aria-invalid={errors.confirmPassword ? "true" : "false"}
+            />
+            {errors.confirmPassword && (
+              <span className="error" role="alert">
+                {errors.confirmPassword.message}
+              </span>
+            )}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="role">Tipo de usuario</label>
+            <select
+              id="role"
+              {...register("role", { required: "Este campo es obligatorio" })}
+              aria-invalid={errors.role ? "true" : "false"}
+            >
+              <option value="">Seleccionar tipo de usuario</option>
+              <option value="Patient">Paciente</option>
+              <option value="Medic">Médico</option>
+            </select>
+            {errors.role && (
+              <span className="error" role="alert">
+                {errors.role.message}
+              </span>
+            )}
+          </div>
+
+          {role === "Medic" && (
+            <div className="form-group">
+              <label htmlFor="specialty">Especialidad</label>
+              <input
+                type="text"
+                id="specialty"
+                placeholder="Especialidad"
+                {...register("specialty", {
+                  required: "Este campo es obligatorio para médicos",
+                })}
+                aria-invalid={errors.specialty ? "true" : "false"}
+              />
+              {errors.specialty && (
+                <span className="error" role="alert">
+                  {errors.specialty.message}
+                </span>
+              )}
+            </div>
+          )}
+
+          {role === "Patient" && (
+            <div className="form-group">
+              <label htmlFor="dateOfBirth">Fecha de nacimiento</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                placeholder="Fecha de nacimiento"
+                {...register("dateOfBirth", {
+                  required: "Este campo es obligatorio para pacientes",
+                })}
+                aria-invalid={errors.dateOfBirth ? "true" : "false"}
+              />
+              {errors.dateOfBirth && (
+                <span className="error" role="alert">
+                  {errors.dateOfBirth.message}
+                </span>
+              )}
+            </div>
+          )}
+
+          <button type="submit" className="btn-register">
+            Registrarse
+          </button>
+        </form>
+
+        <p className="login-link">
+          ¿Ya tienes una cuenta?{" "}
+          <Link to="/login" className="link-login">
+            Inicia sesión aquí
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

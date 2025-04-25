@@ -1,95 +1,113 @@
-import { signOut, signInWithEmailAndPassword, sendEmailVerification, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from "firebase/auth";
+import {
+    signOut,
+    signInWithEmailAndPassword,
+    sendEmailVerification,
+    createUserWithEmailAndPassword,
+    updateProfile,
+    sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth, firestore } from "../utils/firebaseConfig.js";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
-// Registro de usuario
+import { FIREBASE_ERRORS } from "../utils/constants.js";
+
+// Registro
 export const registerUser = async (req, res) => {
     const { email, password, ...rest } = req.body;
 
     try {
-        // Crear el usuario con Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         const uid = user.uid;
 
-        // Actualizar el perfil con el nombre de usuario
         await updateProfile(user, { displayName: rest.username });
 
-        // Guardar usuario en Firestore
         await setDoc(doc(firestore, "users", uid), {
-            uid: uid,
-            email: email,
+            uid,
+            email,
             ...rest,
         });
 
-        // Enviar correo de verificación de email
         await sendEmailVerification(user);
 
-        return res.status(201).json({ message: "Usuario creado exitosamente. Verifica tu correo para completar el proceso." });
+        return res.status(201).json({
+            message: "Usuario creado exitosamente. Verifica tu correo para completar el proceso.",
+        });
     } catch (err) {
-        return res.status(500).json({ message: "Error al crear el usuario.", error: err.message });
+        console.log(err.code);
+        return res.status(400).json({
+            message: FIREBASE_ERRORS[err.code] || "Ocurrió un error inesperado."
+        });
     }
 };
 
-// Iniciar sesión de usuario
+// Login
 export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Intentamos obtener al usuario desde Firebase
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Verificar si el correo está verificado
         if (!user.emailVerified) {
-            // Si el correo no está verificado, impedir el inicio de sesión
-            return res.status(400).json({
-                message: "Por favor verifica tu correo electrónico antes de intentar iniciar sesión."
+            return res.status(403).json({
+                message: "Por favor verifica tu correo electrónico antes de iniciar sesión.",
             });
         }
 
-        // Si el correo está verificado, continuar con el login
         return res.status(200).json({
             message: "Usuario logueado exitosamente.",
+            user: {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+            },
         });
-
     } catch (err) {
-        // En caso de error, manejarlo
-        console.error(err); // Mostrar error en la consola para depuración
-
-        return res.status(500).json({ 
-            message: "Error al loguear el usuario.",
-            error: err.message 
+        return res.status(401).json({
+            message: FIREBASE_ERRORS[err.code] || "Credenciales inválidas."
         });
     }
 };
 
-// Cerrar sesión
+// Logout
 export const logoutUser = async (req, res) => {
     try {
         await signOut(auth);
-        return res.status(200).json({ message: "Usuario deslogueado exitosamente." });
+        return res.status(200).json({ message: "Sesión cerrada exitosamente." });
     } catch (err) {
-        return res.status(500).json({ message: "Error al desloguear el usuario.", error: err.message });
+        return res.status(500).json({
+            message: FIREBASE_ERRORS[err.code] || "Credenciales inválidas.",
+            error: err.code || err.message,
+        });
     }
 };
 
-// Recuperar credenciales de acceso (restablecer contraseña)
+// Recuperar contraseña
 export const recoverPassword = async (req, res) => {
-    const { email } = req.body;  // El correo proporcionado por el cliente
+    const { email } = req.body;
 
     try {
-        // Enviar el enlace de restablecimiento de contraseña a través de Firebase
         await sendPasswordResetEmail(auth, email);
-
         return res.status(200).json({
-            message: "Enlace para restablecer la contraseña enviado al correo electrónico. El enlace expirará en 10 minutos."
+            message: "Se ha enviado un enlace de recuperación a tu correo electrónico.",
         });
     } catch (err) {
-        // Si el correo no está registrado
         return res.status(400).json({
-            message: "No se pudo enviar el enlace. Verifique si el correo está registrado.",
-            error: err.message
+            message: FIREBASE_ERRORS[err.code] || "Credenciales inválidas."
         });
+    }
+};
+
+export const checkAuth = async (req, res) => {
+    const user = auth.currentUser;
+    if (user) {
+        const docRef = doc(firestore, "users", user.uid);
+        const userDoc = await getDoc(docRef);
+        const userData = userDoc.data();
+
+        return res.json({ uid: user.uid, ...userData });
+    } else {
+        return res.status(401).json({ message: "No está autenticado" });
     }
 };
