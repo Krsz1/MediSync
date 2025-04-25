@@ -32,7 +32,7 @@ export default function Home() {
             // Mostrar botones de registro e inicio de sesión si no está autenticado
             <>
               <button
-                className="btn btn-register"
+                className="btn btn-signin"
                 onClick={() => navigate("/register")}
               >
                 Register

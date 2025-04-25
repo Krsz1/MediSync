@@ -1,6 +1,5 @@
 import React from "react";
 import "./Login.css";
-import logo from "../assets/logo_login.png";
 import { useAuth } from "../context/authContextInstance";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
@@ -20,9 +19,6 @@ export default function Login() {
   return (
     <div className="login-page-container">
       <div className="login-container">
-        <Link to="/" className="logo-link">
-          <img src={logo} alt="Logo" className="logo" />
-        </Link>
         <h1>Iniciar sesión</h1>
         {loginErrors && (
           <span className="error-label" role="alert">

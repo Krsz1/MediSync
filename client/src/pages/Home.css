@@ -93,19 +93,8 @@ html {
   text-align: center;
 }
 
-/* Botón de fondo blanco con texto azul */
-.btn-register {
-  background-color: white;
-  color: #0b328d;
-  border: 2px solid #0b328d;
-}
-
-.btn-register:hover {
-  background-color: #e8ecf6;
-}
-
 /* Botones de fondo azul */
-.btn-signin,
+.btn-signin,.btn-register,
 .btn-logout {
   background-color: #0b328d;
   color: white;

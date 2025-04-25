@@ -1,6 +1,5 @@
 import React from "react";
 import "./Register.css";
-import logo from "../assets/logo_register.png";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../context/authContextInstance";
 import { Link, useNavigate } from "react-router-dom";
@@ -46,9 +45,6 @@ export default function Register() {
   return (
     <div className="register-page-container">
       <div className="register-container">
-        <Link to="/" className="logo-link">
-          <img src={logo} alt="Logo" className="logo" />
-        </Link>
         <h1>Registro</h1>
         {registerError && (
           <span className="error-label" role="alert">
