@@ -34,7 +34,6 @@ export const registerUser = async (req, res) => {
             message: "Usuario creado exitosamente. Verifica tu correo para completar el proceso.",
         });
     } catch (err) {
-        console.log(err.code);
         return res.status(400).json({
             message: FIREBASE_ERRORS[err.code] || "Ocurrió un error inesperado."
         });
