@@ -31,6 +31,7 @@ export default function Login() {
             <input
               type="email"
               id="email"
+              placeholder="Correo electrónico"
               {...register("email", { required: "Este campo es obligatorio" })}
               aria-invalid={errors.email ? "true" : "false"}
             />
@@ -46,6 +47,7 @@ export default function Login() {
             <input
               type="password"
               id="password"
+              placeholder="Contraseña"
               {...register("password", {
                 required: "Este campo es obligatorio",
               })}
