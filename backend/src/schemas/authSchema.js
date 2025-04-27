@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-// Campos comunes
 const baseUserSchema = z.object({
     name: z
         .string()

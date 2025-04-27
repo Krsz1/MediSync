@@ -28,11 +28,11 @@ html {
 }
 
 .home-content h1 {
-  font-size: 48px; /* Aumenté el tamaño para destacarlo más */
+  font-size: 48px;
   font-weight: bold;
-  color: white; /* Color claro para el título */
+  color: white; 
   margin-top: 15px;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Sombra suave para mejorar la visibilidad */
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); 
 }
 
 /* Subtítulo */
@@ -40,8 +40,8 @@ html {
   font-size: 24px;
   font-weight: 400;
   letter-spacing: 1px;
-  color: #f0f0f0; /* Gris claro para subtítulo */
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4); /* Sombra sutil para mayor visibilidad */
+  color: #f0f0f0; 
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4); 
 }
 
 /* Descripción adicional */
@@ -51,9 +51,9 @@ html {
   margin-left: auto;
   margin-right: auto;
   font-size: 18px;
-  color: #e0e0e0; /* Gris claro para mayor contraste */
-  line-height: 1.6; /* Espaciado entre líneas */
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+  color: #e0e0e0; 
+  line-height: 1.6;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* Logo */
@@ -93,7 +93,6 @@ html {
   text-align: center;
 }
 
-/* Botones de fondo azul */
 .btn-signin,.btn-register,
 .btn-logout {
   background-color: #0b328d;

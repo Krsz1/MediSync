@@ -23,7 +23,7 @@ html {
 /* Caja de registro */
 .register-container {
   width: 100%;
-  max-width: 850px; /* más ancho por las dos columnas */
+  max-width: 850px; 
   padding: 30px 40px;
   background: transparent;
   text-align: center;

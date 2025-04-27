@@ -5,11 +5,11 @@ import "./Home.css";
 import background from "../assets/background.png";
 import logo from "../assets/logo.png";
 
-import { useAuth } from "../context/authContextInstance"; // Importar el contexto de autenticación
+import { useAuth } from "../context/authContextInstance"; 
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logoutUser } = useAuth(); // Obtener el usuario del contexto de autenticación
+  const { user, isAuthenticated, logoutUser } = useAuth(); 
 
   return (
     <div className="home-wrapper">
