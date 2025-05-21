@@ -1,0 +1,173 @@
+/* Estilos base */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: "Arial", sans-serif;
+}
+
+/* Contenedores principales */
+.home-wrapper {
+  min-height: 100vh;
+  width: 100vw;
+  overflow-y: auto;
+}
+
+.home-container {
+  min-height: 100vh;
+  width: 100%;
+  background-image: url("../assets/background.png");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  position: relative;
+  color: white;
+}
+
+.home-content h1 {
+  font-size: 48px; /* Aumenté el tamaño para destacarlo más */
+  font-weight: bold;
+  color: white; /* Color claro para el título */
+  margin-top: 15px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Sombra suave para mejorar la visibilidad */
+}
+
+/* Subtítulo */
+.home-content h2 {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: #f0f0f0; /* Gris claro para subtítulo */
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4); /* Sombra sutil para mayor visibilidad */
+}
+
+/* Descripción adicional */
+.home-content p {
+  margin-top: 10px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 18px;
+  color: #e0e0e0; /* Gris claro para mayor contraste */
+  line-height: 1.6; /* Espaciado entre líneas */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+}
+
+/* Logo */
+.logo-container {
+  position: absolute;
+  top: 8px;
+  left: 100px;
+  z-index: 10;
+}
+
+.logo-overlay {
+  height: 200px;
+  object-fit: contain;
+}
+
+/* Botones */
+.button-container {
+  position: absolute;
+  top: 75px;
+  right: 100px;
+  display: flex;
+  gap: 15px;
+  z-index: 10;
+}
+
+/* Estilo unificado para todos los botones */
+.btn {
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: none;
+  min-width: 140px;
+  text-align: center;
+}
+
+/* Botones de fondo azul */
+.btn-signin,.btn-register,
+.btn-logout {
+  background-color: #0b328d;
+  color: white;
+}
+
+.btn-signin:hover,
+.btn-logout:hover {
+  background-color: #002766;
+}
+
+/* Contenido central */
+.description-content {
+  padding-top: 345px;
+  padding-bottom: 100px;
+}
+
+.home-content {
+  text-align: center;
+  padding: 0 10%;
+}
+
+.home-content h1 {
+  font-size: 42px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+
+.home-content h2 {
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.home-content p {
+  margin-top: 10px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 16px;
+}
+
+/* Texto flotante sobre íconos */
+.icon-texts {
+  position: relative;
+  width: 100%;
+  margin-top: 60px;
+}
+
+.icon-text {
+  position: absolute;
+  font-weight: bold;
+  color: white;
+  font-size: 14px;
+  line-height: 1.3;
+  max-width: 220px;
+}
+
+.icon-text.first {
+  left: 300px;
+  top: 260px;
+}
+
+.icon-text.second {
+  left: 700px;
+  top: 270px;
+}
+
+.icon-text.third {
+  left: 1150px;
+  top: 270px;
+}
+
+/* Separador final */
+.spacer-bottom {
+  height: 250px;
+}
