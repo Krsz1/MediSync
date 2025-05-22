@@ -4,5 +4,8 @@
     "scripts": {
         "install-backend": "cd backend && npm install",
         "install-client": "cd client && npm install"
+    },
+    "dependencies": {
+        "backend": "file:"
     }
 }
