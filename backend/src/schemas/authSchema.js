@@ -22,7 +22,7 @@ const baseUserSchema = z.object({
         .refine((val) => (val.match(/[a-z]/g) || []).length >= 2, {
             message: "La contraseña debe contener al menos 2 letras minúsculas",
         })
-        .refine((val) => (val.match(/[0-9]/g) || []).length >= 2, {
+        .refine((val) => (val.match(/\d/g) || []).length >= 2, {
             message: "La contraseña debe contener al menos 2 números",
         })
         .refine((val) => (val.match(/[\W_]/g) || []).length >= 2, {

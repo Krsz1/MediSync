@@ -186,5 +186,364 @@ describe("Auth Controller", () => {
                 message: "No está autenticado",  // Verificamos el mensaje de error
             });
         });
+    });//fin prueba checkAuth
+
+    it("debería manejar error inesperado al registrar usuario", async () => {
+    req.body = { email: "test@example.com", password: "password123", username: "testuser" };
+    createUserWithEmailAndPassword.mockRejectedValue({ code: "unknown-error" });
+
+    await registerUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+        message: "Ocurrió un error inesperado.",
     });
+    });//fin prueba error inesperado
+
+    it("debería manejar error de credenciales inválidas en login", async () => {
+    req.body = { email: "test@example.com", password: "wrongpassword" };
+    signInWithEmailAndPassword.mockRejectedValue({ code: "auth/wrong-password" });
+
+    await loginUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({
+        message: FIREBASE_ERRORS["auth/wrong-password"],
+    });
+    });
+
+    it("debería manejar error desconocido en login", async () => {
+        req.body = { email: "test@example.com", password: "password123" };
+        signInWithEmailAndPassword.mockRejectedValue({ code: "unknown-error" });
+
+        await loginUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Credenciales inválidas.",
+        });
+    });//fin prueba error desconocido
+
+    it("debería manejar error al cerrar sesión", async () => {
+        signOut.mockRejectedValue({ code: "auth/internal-error" });
+
+        await logoutUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            message: FIREBASE_ERRORS["auth/internal-error"] || "Credenciales inválidas.",
+            error: "auth/internal-error",
+        });
+    });//fin prueba error cerrar sesión
+
+    it("debería manejar error si email no está registrado", async () => {
+        req.body = { email: "noexiste@example.com" };
+        sendPasswordResetEmail.mockRejectedValue({ code: "auth/user-not-found" });
+
+        await recoverPassword(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: FIREBASE_ERRORS["auth/user-not-found"],
+        });
+    });
+
+    it("debería manejar error desconocido en recuperación de contraseña", async () => {
+        req.body = { email: "test@example.com" };
+        sendPasswordResetEmail.mockRejectedValue({ code: "unknown-error" });
+
+        await recoverPassword(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Credenciales inválidas.",
+        });
+    });//fin prueba error desconocido
+
+        it("debería manejar usuario autenticado sin datos en Firestore", async () => {
+        auth.currentUser = { uid: "123", email: "test@example.com" };
+        getDoc.mockResolvedValue({ data: () => undefined });
+        doc.mockReturnValue({});
+
+        await checkAuth(req, res);
+
+        expect(res.json).toHaveBeenCalledWith({
+            uid: "123",
+            ...undefined,
+        });
+    });//fin prueba usuario autenticado sin datos
+
+   
+
+    it("debería manejar contraseña débil", async () => {
+        req.body = { email: "test@example.com", password: "123", username: "testuser" };
+        createUserWithEmailAndPassword.mockRejectedValue({ code: "auth/weak-password" });
+
+        await registerUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: FIREBASE_ERRORS["auth/weak-password"],
+        });
+    });
+
+    // loginUser
+    it("debería devolver null si el usuario no tiene displayName", async () => {
+        const user = { uid: "abc", email: "test@example.com", emailVerified: true };
+        signInWithEmailAndPassword.mockResolvedValue({ user });
+        req.body = { email: "test@example.com", password: "password123" };
+
+        await loginUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Usuario logueado exitosamente.",
+            user: {
+                uid: user.uid,
+                email: user.email,
+                displayName: undefined,
+            },
+        });
+    });
+
+    // logoutUser
+    it("debería manejar excepción desconocida al cerrar sesión", async () => {
+        signOut.mockRejectedValue(new Error("Error de red"));
+
+        await logoutUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Credenciales inválidas.",
+            error: "Error de red",
+        });
+    });
+
+    
+
+    it("debería manejar error de email inválido", async () => {
+        req.body = { email: "noesunemail" };
+        sendPasswordResetEmail.mockRejectedValue({ code: "auth/invalid-email" });
+
+        await recoverPassword(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: FIREBASE_ERRORS["auth/invalid-email"],
+        });
+    });//fin testssss<<<<<<
+
+        // registerUser - error inesperado (sin código de error)
+    it("debería manejar errores inesperados al registrar usuario", async () => {
+        req.body = { email: "test@example.com", password: "password123", username: "user" };
+        createUserWithEmailAndPassword.mockRejectedValue({});  // sin código
+
+        await registerUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Ocurrió un error inesperado."
+        });
+    });
+
+    // loginUser - error por usuario no encontrado
+    it("debería manejar error si el usuario no existe", async () => {
+        req.body = { email: "noexiste@example.com", password: "12345678" };
+        signInWithEmailAndPassword.mockRejectedValue({ code: "auth/user-not-found" });
+
+        await loginUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            message: FIREBASE_ERRORS["auth/user-not-found"]
+        });
+    });
+
+    // loginUser - error sin código conocido
+    it("debería manejar errores no definidos en el login", async () => {
+        req.body = { email: "test@example.com", password: "password123" };
+        signInWithEmailAndPassword.mockRejectedValue({ code: "auth/otro-error" });
+
+        await loginUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(401);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Credenciales inválidas."
+        });
+    });
+
+    // logoutUser - error con código conocido
+    it("debería devolver error personalizado si signOut falla con código conocido", async () => {
+        signOut.mockRejectedValue({ code: "auth/internal-error" });
+
+        await logoutUser(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            message: FIREBASE_ERRORS["auth/internal-error"],
+            error: "auth/internal-error",
+        });
+    });
+
+    // recoverPassword - error genérico sin código
+    it("debería manejar error inesperado al recuperar contraseña", async () => {
+        req.body = { email: "test@example.com" };
+        sendPasswordResetEmail.mockRejectedValue(new Error("Error desconocido"));
+
+        await recoverPassword(req, res);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            message: "Credenciales inválidas."
+        });
+    });
+
+    // checkAuth - datos del documento de usuario vacíos
+    it("debería manejar documento sin datos en checkAuth", async () => {
+        auth.currentUser = { uid: "123", email: "test@example.com" };
+        getDoc.mockResolvedValue({ data: () => null });  // doc vacío
+        doc.mockReturnValue({});
+
+        await checkAuth(req, res);
+
+        expect(res.json).toHaveBeenCalledWith({
+            uid: "123"
+        });
+    });
+
+    // checkAuth - datos del documento de usuario con campos adicionales
+    it("debería devolver datos adicionales del usuario", async () => {
+        auth.currentUser = { uid: "456" };
+        const userData = { username: "pepe", role: "admin" };
+        getDoc.mockResolvedValue({ data: () => userData });
+        doc.mockReturnValue({});
+
+        await checkAuth(req, res);
+
+        expect(res.json).toHaveBeenCalledWith({
+            uid: "456",
+            username: "pepe",
+            role: "admin"
+        });
+    });//--------------------------------------------------------------------------------->
+
+    describe('registerUser - cuando falta algún dato', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = { body: {} };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it('debería responder con 400 si falta email', async () => {
+    req.body = { password: '123456' };
+
+    await authController.registerUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Faltan datos obligatorios.' });
+  });
+
+  it('debería responder con 400 si falta password', async () => {
+    req.body = { email: 'correo@test.com' };
+
+    await authController.registerUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Faltan datos obligatorios.' });
+  });
 });
+
+describe('loginUser - con error de contraseña incorrecta', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = { body: { email: 'correo@test.com', password: 'wrongpass' } };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it('debería responder con 401 y mensaje de error', async () => {
+    mockSignInWithEmailAndPassword.mockRejectedValue({
+      code: 'auth/wrong-password',
+      message: 'La contraseña es incorrecta.',
+    });
+
+    await authController.loginUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: 'La contraseña es incorrecta.' });
+  });
+});
+
+describe('logoutUser - sin token de sesión', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = { body: {} };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it('debería responder con 400 y mensaje de error', async () => {
+    await authController.logoutUser(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Token de sesión requerido para cerrar sesión.' });
+  });
+});
+
+describe('recoverPassword - error en formato de email', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = { body: { email: 'correo-invalido' } };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it('debería responder con 400 y mensaje de error', async () => {
+    await authController.recoverPassword(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Formato de correo electrónico inválido.' });
+  });
+});
+
+describe('checkAuth - token inválido o usuario no encontrado', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    req = { body: { sessionToken: 'tokenInvalido' } };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+  });
+
+  it('debería responder con 401 si token no válido', async () => {
+    mockVerifySessionToken.mockRejectedValue(new Error('Token inválido'));
+
+    await authController.checkAuth(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Token inválido o expirado.' });
+  });
+
+  it('debería responder con 404 si no encuentra usuario', async () => {
+    mockVerifySessionToken.mockResolvedValue({ uid: '12345' });
+    mockGetUserByUid.mockResolvedValue(null);
+
+    await authController.checkAuth(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Usuario no encontrado.' });
+  });
+});
+
+    
+});//fin test authController
