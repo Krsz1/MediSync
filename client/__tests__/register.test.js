@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Register from '../src/pages/Register';
+import Register from '../src/pages/Register.jsx';
 
 describe('Register', () => {
   test('renderiza inputs de nombre, correo y contraseña', () => {
@@ -299,6 +299,62 @@ describe('Register', () => {
         specialty: 'Diagnóstico',
       }));
     });
+  });//aqui se envía el formulario y se espera que se llame a la función de registro con los datos correctos
+
+    test('muestra mensaje de error si error viene del contexto', async () => {
+    useAuth.mockReturnValue({
+      registerUser: mockRegisterUser,
+      error: 'Error inesperado',
+    });
+
+    renderWithProviders(<Register />);
+
+    expect(await screen.findByText(/error inesperado/i)).toBeInTheDocument();
   });
+
+    test('renderiza el enlace para iniciar sesión si ya tienes cuenta', () => {
+    renderWithProviders(<Register />);
+    const loginLink = screen.getByRole('link', { name: /¿ya tienes una cuenta\? inicia sesión/i });
+    expect(loginLink).toBeInTheDocument();
+    expect(loginLink.getAttribute('href')).toBe('/login');
+  });
+
+    test('todos los campos se actualizan correctamente para paciente', () => {
+    renderWithProviders(<Register />);
+    fireEvent.change(screen.getByLabelText(/nombre completo/i), {
+      target: { value: 'Ana' },
+    });
+    fireEvent.change(screen.getByLabelText(/correo electrónico/i), {
+      target: { value: 'ana@example.com' },
+    });
+    fireEvent.change(screen.getByLabelText(/^contraseña$/i), {
+      target: { value: '12345678' },
+    });
+    fireEvent.change(screen.getByLabelText(/confirmar contraseña/i), {
+      target: { value: '12345678' },
+    });
+
+    expect(screen.getByLabelText(/nombre completo/i)).toHaveValue('Ana');
+    expect(screen.getByLabelText(/correo electrónico/i)).toHaveValue('ana@example.com');
+  });
+
+    test('envía datos y muestra estado de carga durante la petición', async () => {
+    mockRegisterUser.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
+
+    renderWithProviders(<Register />);
+    fillFormBase();
+    selectUserType('Patient');
+
+    const submitButton = screen.getByRole('button', { name: /registrarse/i });
+
+    fireEvent.click(submitButton);
+    expect(submitButton).toBeDisabled();
+
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+  });
+
+
+
+
 
 });// fin test
